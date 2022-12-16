@@ -13,10 +13,10 @@ import com.mzc.quiz.play.repository.QplayRepository;
 import com.mzc.quiz.play.util.RedisPrefix;
 import com.mzc.quiz.play.util.RedisUtil;
 import com.mzc.quiz.show.entity.Show;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -24,24 +24,20 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.mzc.quiz.play.config.RabbitConfig.quieExchange;
-import static com.mzc.quiz.play.config.StompWebSocketConfig.TOPIC;
+import static com.mzc.quiz.play.config.RabbitConfig.quizRoutingKey;
+import static com.mzc.quiz.play.config.RabbitConfig.quizExchange;
 
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class HostService {
 
-    @Autowired
-    RedisUtil redisUtil;
+    private final RedisUtil redisUtil;
+    private final QplayRepository qplayRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final AmqpTemplate amqpTemplate;
 
-    @Autowired
-    QplayRepository qplayRepository;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
-    @Autowired
-    private AmqpTemplate amqpTemplate;
 
     public void quizStart(QuizMessage quizMessage) {
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
@@ -57,8 +53,9 @@ public class HostService {
             quizMessage.setAction(QuizActionType.COMMAND);
             quizMessage.setCommand(QuizCommandType.START);
             quizMessage.setQuiz(quiz);
-            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
-//            amqpTemplate.convertAndSend(quieExchange, "", quizMessage);
+
+//            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
+            amqpTemplate.convertAndSend(quizExchange, quizRoutingKey, quizMessage);
         } else {
 
         }
@@ -105,8 +102,10 @@ public class HostService {
 
             quizMessage.setCommand(QuizCommandType.RESULT);
             quizMessage.setAction(QuizActionType.COMMAND);
-            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
-//            amqpTemplate.convertAndSend(quieExchange, "", quizMessage);
+
+
+//            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
+            amqpTemplate.convertAndSend(quizExchange, quizRoutingKey, quizMessage);
         }else{
             quizFinal(quizMessage);
         }
@@ -132,6 +131,7 @@ public class HostService {
 //        quizMessage.setCommand(QuizCommandType.START);
 //        quizMessage.setAction(QuizActionType.COMMAND);
 //        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
+        amqpTemplate.convertAndSend(quizExchange, quizRoutingKey,quizMessage);
     }
 
     public void quizFinal(QuizMessage quizMessage) {
@@ -139,8 +139,9 @@ public class HostService {
         redisUtil.genKey(RedisPrefix.LOG.name(), quizMessage.getPinNum());
         quizMessage.setCommand(QuizCommandType.FINAL);
         quizMessage.setAction(QuizActionType.COMMAND);
-        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
-//        amqpTemplate.convertAndSend(quieExchange,"" ,quizMessage);
+
+//        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
+        amqpTemplate.convertAndSend(quizExchange, quizRoutingKey,quizMessage);
     }
 
     public void userBan(QuizMessage quizMessage){
@@ -165,8 +166,9 @@ public class HostService {
 //            resMessage.setNickName(nickname);
 
         }
-        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
-//        amqpTemplate.convertAndSend(quieExchange, "",quizMessage);
+
+//        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
+        amqpTemplate.convertAndSend(quizExchange, quizRoutingKey,quizMessage);
     }
 
 

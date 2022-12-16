@@ -19,9 +19,9 @@ import java.security.Principal;
 import java.util.Base64;
 import java.util.List;
 
-import static com.mzc.quiz.play.config.RabbitConfig.quieExchange;
+import static com.mzc.quiz.play.config.RabbitConfig.quizRoutingKey;
+import static com.mzc.quiz.play.config.RabbitConfig.quizExchange;
 import static com.mzc.quiz.play.config.StompWebSocketConfig.DIRECT;
-import static com.mzc.quiz.play.config.StompWebSocketConfig.TOPIC;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +66,8 @@ public class ClientService {
 
             quizMessage.setAction(QuizActionType.ROBBY);
             quizMessage.setCommand(QuizCommandType.BROADCAST);
-            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
-//            amqpTemplate.convertAndSend(quieExchange, "",quizMessage);
+//            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
+            amqpTemplate.convertAndSend(quizExchange, quizRoutingKey,quizMessage);
         }
     }
 
