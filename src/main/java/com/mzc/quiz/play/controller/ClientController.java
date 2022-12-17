@@ -1,7 +1,7 @@
 package com.mzc.quiz.play.controller;
 
-import com.mzc.global.Response.DefaultRes;
-import com.mzc.quiz.play.model.websocket.QuizMessage;
+import com.mzc.quiz.global.Response.DefaultRes;
+import com.mzc.quiz.play.entity.websocket.QuizMessage;
 import com.mzc.quiz.play.service.ClientService;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

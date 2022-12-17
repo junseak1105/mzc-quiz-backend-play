@@ -27,20 +27,9 @@ dependencies {
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
     runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-    // mysql
-    implementation 'mysql:mysql-connector-java'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-
-    // jwt 토큰
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.2'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2'
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
 
     // Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
@@ -48,21 +37,15 @@ dependencies {
     // Random
     implementation 'org.apache.commons:commons-lang3:3.12.0'
 
-
-
-
     // swagger
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
 
-
+    // Actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator:2.7.6'
-
 
     // JSON
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
-
-
 
     // websocket
     implementation 'org.springframework.boot:spring-boot-starter-websocket'

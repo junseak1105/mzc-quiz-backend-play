@@ -1,15 +1,17 @@
 package com.mzc.quiz.play.service;
 
 import com.google.gson.Gson;
-import com.mzc.global.Response.DefaultRes;
-import com.mzc.global.Response.ResponseMessages;
-import com.mzc.global.Response.StatusCode;
-import com.mzc.quiz.play.model.mongo.Quiz;
-import com.mzc.quiz.play.model.websocket.QuizActionType;
-import com.mzc.quiz.play.model.websocket.QuizCommandType;
-import com.mzc.quiz.play.model.websocket.QuizMessage;
-import com.mzc.quiz.play.util.RedisPrefix;
-import com.mzc.quiz.play.util.RedisUtil;
+import com.mzc.quiz.global.Response.DefaultRes;
+import com.mzc.quiz.global.Response.ResponseMessages;
+import com.mzc.quiz.global.Response.StatusCode;
+import com.mzc.quiz.rabbitMQ.config.RabbitConfig;
+import com.mzc.quiz.play.stompConfig.StompWebSocketConfig;
+import com.mzc.quiz.play.entity.mongo.Quiz;
+import com.mzc.quiz.play.entity.websocket.QuizActionType;
+import com.mzc.quiz.play.entity.websocket.QuizCommandType;
+import com.mzc.quiz.play.entity.websocket.QuizMessage;
+import com.mzc.quiz.global.redisUtil.RedisPrefix;
+import com.mzc.quiz.global.redisUtil.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,10 +20,6 @@ import org.springframework.stereotype.Service;
 import java.security.Principal;
 import java.util.Base64;
 import java.util.List;
-
-import static com.mzc.quiz.play.config.RabbitConfig.quizRoutingKey;
-import static com.mzc.quiz.play.config.RabbitConfig.quizExchange;
-import static com.mzc.quiz.play.config.StompWebSocketConfig.DIRECT;
 
 @Service
 @RequiredArgsConstructor
@@ -50,7 +48,7 @@ public class ClientService {
         System.out.println(quizMessage);
         if (redisUtil.SISMEMBER(playKey, username)) {
             // Front에서 KickName 중복시 명령어 결정 후 추가 코드 작성
-            simpMessagingTemplate.convertAndSendToUser(principal.getName(), DIRECT + quizMessage.getPinNum(), "nicknametry");
+            simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), "nicknametry");
             System.out.println("닉네임 중복");
         } else {
             redisUtil.SADD(playKey, username);
@@ -61,7 +59,7 @@ public class ClientService {
             quizMessage.setUserList(userList);
 
             // 보낸 유저한테만 다시 보내주고
-            simpMessagingTemplate.convertAndSendToUser(principal.getName(), DIRECT + quizMessage.getPinNum(), quizMessage);
+            simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), quizMessage);
 
             // LOG:핀번호 - 유저수
             String logKey = redisUtil.genKey(RedisPrefix.LOG.name(), quizMessage.getPinNum());
@@ -74,7 +72,7 @@ public class ClientService {
 
             quizMessage.setAction(QuizActionType.ROBBY);
             quizMessage.setCommand(QuizCommandType.BROADCAST);
-            amqpTemplate.convertAndSend(quizExchange, quizRoutingKey,quizMessage);
+            amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey,quizMessage);
         }
     }
 
