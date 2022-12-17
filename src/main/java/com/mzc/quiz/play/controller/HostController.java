@@ -66,4 +66,11 @@ public class HostController {
     public void userBan(@RequestBody QuizMessage quizMessage){
         hostService.userBan(quizMessage);
     }
+
+    // END
+    // - 플레이 종료
+    @MessageMapping("/end")
+    public void playEnd(@RequestBody QuizMessage quizMessage){
+        hostService.playEnd(quizMessage);
+    }
 }

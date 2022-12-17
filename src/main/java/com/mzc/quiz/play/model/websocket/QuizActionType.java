@@ -4,6 +4,7 @@ public enum QuizActionType {
     COMMAND,
     SUBMIT,
     ROBBY,
-    BAN
+    BAN,
+    END
 
 }

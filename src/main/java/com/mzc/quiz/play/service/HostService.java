@@ -249,12 +249,23 @@ public class HostService {
 //        }
         return false;
     }
-
+    
     // 현재 시간
     public String nowTime(){
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
         return ""+now.format(formatter);
+    }
+    
+    public void playEnd(QuizMessage quizMessage) {
+        String pin = quizMessage.getPinNum();
+        String playKey = redisUtil.genKey(pin);
+        String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), pin);
+
+        redisUtil.DEL(playKey);
+        redisUtil.DEL(quizKey);
+
+        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
     }
 }
