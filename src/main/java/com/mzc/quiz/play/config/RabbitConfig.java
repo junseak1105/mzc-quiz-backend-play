@@ -4,13 +4,17 @@ package com.mzc.quiz.play.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.amqp.core.*;
 
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableRabbit
@@ -23,23 +27,44 @@ public class RabbitConfig {
     private String RabbitMQ_PW;
     @Value("${spring.rabbitmq.port}")
     private int RabbitMQ_Port;
-    public static final String quizQueue = "quiz.queue.multi";
-    public static final String quizExchange = "quizmulti.exchange";
-    public static final String quizRoutingKey = "pin.#";
+
+    @Value("${queue-name}")
+    private String quizQueue;
+//    public static final String quizQueue; // + RandomStringUtils.randomNumeric(6);
+
+
+    public static final String quizExchange = "test.fanout";
+    public static final String quizRoutingKey = "pin.*";
+
 
     @Bean
-    public Queue quizQueue(){
-        return new Queue(quizQueue, true);
+    public FanoutExchange fanoutExchange(){
+        return new FanoutExchange(quizExchange);
     }
 
     @Bean
-    public TopicExchange topicExchange(){
-        return new TopicExchange(quizExchange);
+    public Queue autoDeleteQueue1() {
+        return new AnonymousQueue();
     }
     @Bean
-    Binding quizBinding(Queue quizQueue, TopicExchange topicExchange){
-        return BindingBuilder.bind(quizQueue).to(topicExchange).with(quizRoutingKey);
+    public Binding binding1(FanoutExchange fanoutExchange,
+                            Queue autoDeleteQueue1) {
+        return BindingBuilder.bind(autoDeleteQueue1).to(fanoutExchange);
     }
+
+//    @Bean
+//    Binding quizBinding(Queue quizQueue, FanoutExchange fanoutExchange){
+//        return BindingBuilder.bind(quizQueue).to(fanoutExchange);
+//    }
+
+//    @Bean
+//    public TopicExchange topicExchange(){
+//        return new TopicExchange(quizExchange);
+//    }
+//    @Bean
+//    Binding quizBinding(Queue quizQueue, TopicExchange topicExchange){
+//        return BindingBuilder.bind(quizQueue).to(topicExchange).with(quizRoutingKey);
+//    }
 
 
     @Bean
