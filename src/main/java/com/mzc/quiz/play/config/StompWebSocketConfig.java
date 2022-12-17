@@ -38,15 +38,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.setApplicationDestinationPrefixes(PREFIX);
-//        config.enableStompBrokerRelay("/topic","/queue", "/exchange", "/amq/queue")
-//                .setRelayHost(RabbitMQ_Host)
-//                .setRelayPort(61613)
-//                .setVirtualHost("/")
-//                .setSystemLogin(RabbitMQ_ID)
-//                .setSystemPasscode(RabbitMQ_PW)
-//                .setClientLogin(RabbitMQ_ID)
-//                .setClientPasscode(RabbitMQ_PW);
-
         config.enableSimpleBroker(TOPIC, DIRECT);
 
     }
