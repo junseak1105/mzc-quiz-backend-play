@@ -54,7 +54,6 @@ public class HostService {
             quizMessage.setCommand(QuizCommandType.START);
             quizMessage.setQuiz(quiz);
 
-//            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
             amqpTemplate.convertAndSend(quizExchange, quizRoutingKey, quizMessage);
         } else {
 
@@ -104,7 +103,6 @@ public class HostService {
             quizMessage.setAction(QuizActionType.COMMAND);
 
 
-//            simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
             amqpTemplate.convertAndSend(quizExchange, quizRoutingKey, quizMessage);
         }else{
             quizFinal(quizMessage);
@@ -130,7 +128,6 @@ public class HostService {
 
 //        quizMessage.setCommand(QuizCommandType.START);
 //        quizMessage.setAction(QuizActionType.COMMAND);
-//        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
         amqpTemplate.convertAndSend(quizExchange, quizRoutingKey,quizMessage);
     }
 
@@ -167,7 +164,6 @@ public class HostService {
 
         }
 
-//        simpMessagingTemplate.convertAndSend(TOPIC + quizMessage.getPinNum(), quizMessage);
         amqpTemplate.convertAndSend(quizExchange, quizRoutingKey,quizMessage);
     }
 
