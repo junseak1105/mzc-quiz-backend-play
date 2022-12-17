@@ -197,6 +197,18 @@ public class RedisUtil {
         return listOperations.leftPop(key,count);
     }
 
+    public Long leftPush(String key, String value){
+        return listOperations.leftPush(key, value);
+    }
+
+    public void listDataSet(String key, long index, String value){
+        listOperations.set(key,index,value);
+    }
+    // 리스트 크기
+    public Long listSize(String key){
+        return listOperations.size(key);
+    }
+
     // ----------------------------------------------------------------
     // [Custom]
 
