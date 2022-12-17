@@ -15,8 +15,7 @@ public class rabbitQuizListner {
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
 
-
-    @RabbitListener(queues = "#{autoDeleteQueue1.name}")
+    @RabbitListener(queues = "#{autoDeleteQueue.name}")
     public void consumeMessage(QuizMessage quizMessage){
         System.out.println("**************** Rabbit MQ ******************");
         System.out.println("message Return : " + quizMessage);
