@@ -30,7 +30,7 @@ public class ClientController {
     }
 
     @MessageMapping("/submit")
-    public void submit(@RequestBody QuizMessage quizMessage){
-        clientService.submit(quizMessage);
+    public void submit(Principal principal, @RequestBody QuizMessage quizMessage){
+        clientService.submit(principal, quizMessage);
     }
 }

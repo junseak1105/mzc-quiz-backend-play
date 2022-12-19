@@ -11,6 +11,7 @@ public class Submit {
     private String quizNum;
     private String answerTime; //미제출자 -1
     private String[] answer; // 유저가 선택한 답안 ["num1", "num2", "num3"] ["O"] ["X"] ["답안"]
+    private boolean isAns;
 }
 
 /*

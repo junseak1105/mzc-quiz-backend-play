@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -28,7 +29,7 @@ public class QuizMessage {
     private Quiz quiz;
     //SUBMIT
     private Submit submit;
-    private List<String> userList;
+    private Set<String> userList;
 
 }
 

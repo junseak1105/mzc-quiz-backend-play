@@ -2,6 +2,8 @@ package com.mzc.quiz.play.entity.log;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class Log {
     private ShowData showdata; // Show Id, Show 제목
@@ -11,5 +13,5 @@ public class Log {
     private String playtime; // 진행한 시간
     private String usercount; // 참가한 유저
 
-    private UserData userData; // 랭킹, 닉네임, 랭킹점수, 맞은 문제수, 정답여부
+    private List<UserData> userData; // 랭킹, 닉네임, 랭킹점수, 맞은 문제수, 정답여부
 }

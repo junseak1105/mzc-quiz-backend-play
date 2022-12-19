@@ -71,9 +71,9 @@ public class HostRoundService {
         Quiz quiz = gson.fromJson(QuizDataToString, Quiz.class);
         quizMessage.setQuiz(quiz);
 
-        // 랭킹 점수
-        long userCount = redisUtil.setDataSize(redisUtil.genKey(RedisPrefix.USER.name(), quizMessage.getPinNum()));
-        Set<ZSetOperations.TypedTuple<String>> ranking = redisUtil.getRanking(resultKey, 0, userCount);
+        // 랭킹 점수 final이랑 공통 리펙토링할 때 공통 클래스를 만들거나 하면 좋을 듯
+        long userCount = redisUtil.getZDataSize(redisUtil.genKey(RedisPrefix.USER.name(), quizMessage.getPinNum()));
+        Set<ZSetOperations.TypedTuple<String>> ranking = redisUtil.getZData(resultKey, 0, userCount);
 
         Iterator<ZSetOperations.TypedTuple<String>> iterRank = ranking.iterator();
         List<UserRank> RankingList = new ArrayList<>();
@@ -87,42 +87,47 @@ public class HostRoundService {
         quizMessage.setRank(RankingList);
 
         // 마지막 퀴즈인지 체크
-        int lastQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey,"lastQuiz").toString());
+        int lastQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "lastQuiz").toString());
         System.out.println(lastQuiz);
-        if(currentQuiz < lastQuiz) {
+        if (currentQuiz < lastQuiz) {
             redisUtil.setHashData(quizKey, "currentQuiz", Integer.toString(quizMessage.getQuiz().getNum() + 1));
 
             quizMessage.setCommand(QuizCommandType.RESULT);
             quizMessage.setAction(QuizActionType.COMMAND);
-
-
             amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey, quizMessage);
-        }else{
+        } else {
             hostPlayService.playFinal(quizMessage);
         }
     }
 
     public void roundSkip(QuizMessage quizMessage) {
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
+        String quizCollectKey = redisUtil.genKey("ANSWERCORRECT", quizMessage.getPinNum()); // 임시
 
         int currentQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "currentQuiz").toString());
-        int lastQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey,"lastQuiz").toString());
+        int lastQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "lastQuiz").toString());
 
-        System.out.println("last" + lastQuiz);
+        // 건너뛰기때 정답여부 변경
+//        if (redisUtil.hasKey(quizCollectKey)) { // 키값이 있을 때
+//            String quizCorrectData = redisUtil.GetHashData(quizCollectKey, quizMessage.getNickName()).toString();
+//            String[] quizCorrect = quizCorrectData.split(",");
+//
+//            if (currentQuiz == quizCorrect.length) { // 제출한 상태
+//                redisUtil.setHashData(quizCollectKey, quizMessage.getNickName(), quizCorrectData.substring(0, quizCorrectData.length() - 1) + "-1");
+//            } else if (currentQuiz > quizCorrect.length) { // 제줄안한 상태
+//                redisUtil.setHashData(quizCollectKey, quizMessage.getNickName(), quizCorrectData + ",-1");
+//            }
+//        } else { // 키값이 없을 때
+//            redisUtil.setHashData(quizCollectKey, quizMessage.getNickName(), "-1");
+//        }
 
-        if(currentQuiz < lastQuiz){
-            System.out.println("current" + currentQuiz);
+        if (currentQuiz < lastQuiz) {
             redisUtil.setHashData(quizKey, "currentQuiz", Integer.toString(currentQuiz + 1));
             roundStart(quizMessage);
-        }else{
+        } else {
             hostPlayService.playFinal(quizMessage);
         }
 
-//        quizMessage.setCommand(QuizCommandType.START);
-//        quizMessage.setAction(QuizActionType.COMMAND);
-        amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey,quizMessage);
-
+        amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey, quizMessage);
     }
-
-
 }

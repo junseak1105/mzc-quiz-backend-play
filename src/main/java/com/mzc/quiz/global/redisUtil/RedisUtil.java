@@ -170,7 +170,7 @@ public class RedisUtil {
         zSetOperations.add(key, value, score);
     }
 
-    public Set<ZSetOperations.TypedTuple<String>> getRanking(String key, long startIndex, long endIndex) {
+    public Set<ZSetOperations.TypedTuple<String>> getZData(String key, long startIndex, long endIndex) {
         return zSetOperations.reverseRangeWithScores(key, startIndex, endIndex);
     }
 
@@ -189,6 +189,13 @@ public class RedisUtil {
         return zSetOperations.remove(key, value);
     }
 
+    public Long getZDataSize(String key){
+        return zSetOperations.size(key);
+    }
+
+    public Set<String> getAllZData(String key){
+        return zSetOperations.range(key, 0, -1);
+    }
     // -------------------------------------------------------------
 
     // [ List ]

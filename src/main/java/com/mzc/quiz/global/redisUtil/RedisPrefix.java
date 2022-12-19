@@ -6,6 +6,7 @@ public enum RedisPrefix {
     QUIZ,
     LOG,
     RESULT,
+    SUBMIT,
     P
 
 
