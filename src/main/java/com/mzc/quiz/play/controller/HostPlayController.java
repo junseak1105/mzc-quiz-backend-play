@@ -5,6 +5,7 @@ import com.mzc.quiz.play.entity.mongo.Show;
 import com.mzc.quiz.play.entity.websocket.QuizMessage;
 import com.mzc.quiz.play.service.HostPlayService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,7 +22,7 @@ public class HostPlayController {
 
     // ============== REST API =================
     @PostMapping("/v1/host/createPlay")
-    public DefaultRes playCreate(@RequestBody Show show){
+    public ResponseEntity playCreate(@RequestBody Show show){
         return hostPlayService.playCreate(show.getId());
     }
 

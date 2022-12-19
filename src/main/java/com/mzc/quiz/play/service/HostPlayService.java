@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -33,13 +35,13 @@ public class HostPlayService {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final AmqpTemplate amqpTemplate;
 
-    public DefaultRes playCreate(String quizId) {
-        System.out.println("playCreate IN");
+
+    public ResponseEntity playCreate(String quizId) {
         try {
             String pin = makePIN(quizId);
-            return DefaultRes.res(StatusCode.OK, ResponseMessages.SUCCESS, pin);
+            return new ResponseEntity((DefaultRes.res(StatusCode.OK, ResponseMessages.SUCCESS, pin)), HttpStatus.OK);
         } catch (Exception e) {
-            return DefaultRes.res(StatusCode.BAD_REQUEST, ResponseMessages.BAD_REQUEST);
+            return new ResponseEntity((DefaultRes.res(StatusCode.BAD_REQUEST, ResponseMessages.BAD_REQUEST)), HttpStatus.BAD_REQUEST);
         }
     }
 
