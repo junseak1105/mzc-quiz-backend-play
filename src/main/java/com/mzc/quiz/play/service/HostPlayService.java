@@ -91,7 +91,7 @@ public class HostPlayService {
         quizMessage.setRank(RankingList);
 
         // LOG:PIN - 끝난 시간, 유저별 랭킹데이터
-        saveLogData("FINAL", quizMessage.getPinNum(), RankingList);
+        saveFinalLogData(quizMessage.getPinNum(), RankingList);
 
         quizMessage.setCommand(QuizCommandType.FINAL);
         quizMessage.setAction(QuizActionType.COMMAND);
@@ -127,7 +127,7 @@ public class HostPlayService {
             } else {
                 Gson gson = new Gson();
                 try {
-                    String show = apiTestGet(quizId);
+                    String show = searchShowData(quizId);
 
                     JsonObject jsonObject = JsonParser.parseString(show).getAsJsonObject();
                     Show showData = gson.fromJson(jsonObject.get("Item"), Show.class);
@@ -144,7 +144,7 @@ public class HostPlayService {
                         }
                     }
 
-                    saveLogData("START", pin, show);
+                    saveStartLogData(pin, showData);
 
                     // PLAY:pinNum  - 유저 리스트에 MongoDB의 ID가 들어감
                     redisUtil.SADD(playKey, quizId);
@@ -166,43 +166,42 @@ public class HostPlayService {
         return "" + now.format(formatter);
     }
 
-    public void saveLogData(String command, String pin, Object data) {
+    public void saveStartLogData(String pin, Show data) {
         String logKey = redisUtil.genKey(RedisPrefix.LOG.name(), pin);
 
-        switch (command) {
-            case "START":
-                Show startdata = (Show) data;
-                redisUtil.leftPush(logKey, "showid:" + startdata.getId());
-                redisUtil.leftPush(logKey, "showtitle:" + startdata.getQuizInfo().getTitle());
-                redisUtil.leftPush(logKey, "quizcount:" + startdata.getQuizData().size());
-                redisUtil.leftPush(logKey, "quizdate:" + nowTime());
-                break;
-            case "FINAL":
-                String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), pin);
-                String userKey = redisUtil.genKey(RedisPrefix.USER.name(), pin);
+        redisUtil.leftPush(logKey, "showid:" + data.getId());
+        redisUtil.leftPush(logKey, "showtitle:" + data.getQuizInfo().getTitle());
+        redisUtil.leftPush(logKey, "quizcount:" + data.getQuizData().size());
+        redisUtil.leftPush(logKey, "quizdate:" + nowTime());
+    }
 
-                List<UserRank> finaldata = (List<UserRank>) data;
-                Map<Object, Object> iscorrectlist = redisUtil.GetAllHashData(quizCollectKey);
-                Set<String> correctCountList = redisUtil.getAllZData(userKey);
-                for (UserRank user : finaldata) {
-                    String userdata = "nickname:" + user.getNickName() + ",rank:" + user.getRank() + ",rankscore:" + user.getRankScore();
+    public void saveFinalLogData(String pin, List<UserRank> data) {
+        String logKey = redisUtil.genKey(RedisPrefix.LOG.name(), pin);
+        String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), pin);
+        String userKey = redisUtil.genKey(RedisPrefix.USER.name(), pin);
 
-                    userdata += ",iscorrectlist:" + iscorrectlist.get(user.getNickName());
+        redisUtil.leftPush(logKey, "usercount:"+data.size());
 
-                    Iterator iter = correctCountList.iterator();
-                    while (iter.hasNext()) {
-                        String nickname = (String) iter.next();
-                        if (user.getNickName() == nickname) {
-                            userdata += ",correctcount:" + redisUtil.getScore(userKey, nickname);
-                        }
-                    }
-                    redisUtil.leftPush(logKey, userdata);
+        Map<Object, Object> iscorrectlist = redisUtil.GetAllHashData(quizCollectKey);
+        Set<String> correctCountList = redisUtil.getAllZData(userKey);
+        for (UserRank user : data) {
+            String userdata = "nickname:" + user.getNickName() + ",rank:" + user.getRank() + ",rankscore:" + user.getRankScore();
+
+            userdata += ",iscorrectlist:" + iscorrectlist.get(user.getNickName());
+
+            Iterator iter = correctCountList.iterator();
+            while (iter.hasNext()) {
+                String nickname = (String) iter.next();
+                System.out.println(nickname);
+                if (user.getNickName().equals(nickname)) {
+                    userdata += ",correctcount:" + redisUtil.getScore(userKey, nickname);
                 }
-                break;
+            }
+            redisUtil.leftPush(logKey, userdata);
         }
     }
 
-    public String apiTestGet(String id) throws Exception {
+    public String searchShowData(String id) throws Exception {
         URL url = null;
         String readLine = null;
         StringBuilder buffer = null;
