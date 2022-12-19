@@ -22,6 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -194,5 +199,67 @@ public class HostPlayService {
                 }
                 break;
         }
+    }
+
+    public String apiTestGet(String id) throws Exception
+    {
+        URL url = null;
+        String readLine = null;
+        StringBuilder buffer = null;
+        BufferedReader bufferedReader = null;
+        BufferedWriter bufferedWriter = null;
+        HttpURLConnection urlConnection = null;
+
+        int connTimeout = 5000;
+        int readTimeout = 3000;
+
+        String apiUrl = "https://ted9c640x5.execute-api.ap-northeast-3.amazonaws.com/v1/show/"+id;    // 각자 상황에 맞는 IP & url 사용
+
+        try
+        {
+            url = new URL(apiUrl);
+            urlConnection = (HttpURLConnection)url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setConnectTimeout(connTimeout);
+            urlConnection.setReadTimeout(readTimeout);
+            urlConnection.setRequestProperty("Accept", "application/json;");
+
+            buffer = new StringBuilder();
+            if(urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK)
+            {
+                bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
+                while((readLine = bufferedReader.readLine()) != null)
+                {
+                    buffer.append(readLine).append("\n");
+                }
+            }
+            else
+            {
+                buffer.append("code : ");
+                buffer.append(urlConnection.getResponseCode()).append("\n");
+                buffer.append("message : ");
+                buffer.append(urlConnection.getResponseMessage()).append("\n");
+            }
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                if (bufferedWriter != null) { bufferedWriter.close(); }
+                if (bufferedReader != null) { bufferedReader.close(); }
+            }
+            catch(Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+
+        System.out.println("결과 : " + buffer.toString());
+        return buffer.toString();
     }
 }

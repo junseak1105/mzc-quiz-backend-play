@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.annotation.SendToUser;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,6 +27,11 @@ public class HostPlayController {
     @PostMapping("/v1/host/getUserList")
     public List<String> playGetUserList(@RequestBody QuizMessage quizMessage){
         return hostPlayService.playGetUserList(quizMessage.getPinNum());
+    }
+
+    @GetMapping("/v1/host/test/{id}")
+    public String test(@PathVariable String id) throws Exception {
+        return hostPlayService.apiTestGet(id);
     }
 
     // ============== Stomp(Websocket) =================
