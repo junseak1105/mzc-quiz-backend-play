@@ -102,7 +102,7 @@ public class HostRoundService {
 
     public void roundSkip(QuizMessage quizMessage) {
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
-        String quizCollectKey = redisUtil.genKey("ANSWERCORRECT", quizMessage.getPinNum()); // 임시
+        String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), quizMessage.getPinNum());
 
         int currentQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "currentQuiz").toString());
         int lastQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "lastQuiz").toString());

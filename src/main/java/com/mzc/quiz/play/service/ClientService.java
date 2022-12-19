@@ -44,7 +44,7 @@ public class ClientService {
     public void setNickname(Principal principal, QuizMessage quizMessage) {
         String playKey = redisUtil.genKey(RedisPrefix.USER.name(),quizMessage.getPinNum());
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
-        String quizCollectKey=redisUtil.genKey("ANSWERCORRECT", quizMessage.getPinNum()); // 임시
+        String quizCollectKey=redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), quizMessage.getPinNum()); // 임시
 
         String username = quizMessage.getNickName();
         // Set 조회해서 -> content에 넣어서 보내기
@@ -96,7 +96,7 @@ public class ClientService {
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
         String userKey = redisUtil.genKey(RedisPrefix.USER.name(), quizMessage.getPinNum());
         String submitKey = redisUtil.genKey(RedisPrefix.SUBMIT.name(), quizMessage.getPinNum());
-        String quizCollectKey=redisUtil.genKey("ANSWERCORRECT", quizMessage.getPinNum()); // 임시
+        String quizCollectKey=redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), quizMessage.getPinNum());
 
         String QuizDataToString = new String(Base64.getDecoder().decode(redisUtil.GetHashData(quizKey, RedisPrefix.P.name() + quizMessage.getSubmit().getQuizNum()).toString()));
         Gson gson = new Gson();

@@ -7,8 +7,6 @@ public enum RedisPrefix {
     LOG,
     RESULT,
     SUBMIT,
-    P
-
-
-
+    P,
+    ANSCORLIST
 }
