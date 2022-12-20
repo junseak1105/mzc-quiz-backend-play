@@ -61,9 +61,9 @@ public class HostPlayService {
         String pin = quizMessage.getPinNum();
         String key = redisUtil.genKey(RedisPrefix.USER.name(), pin);
         String nickname = quizMessage.getNickName();
-        System.out.printf(nickname);
 
         if (redisUtil.SREM(key, nickname) == 1) {
+            // Sorted Set으로 변경해서 오류날거임..
             List<String> userList = redisUtil.getUserList(quizMessage.getPinNum());
             System.out.println(redisUtil.getUserList(pin));
         }
@@ -75,7 +75,6 @@ public class HostPlayService {
         String resultKey = redisUtil.genKey(RedisPrefix.RESULT.name(), quizMessage.getPinNum());
 
         // 랭킹 갱신
-        // userCount set->sorted set으로 변경해서 바꿔야함.
         long userCount = redisUtil.getZDataSize(redisUtil.genKey(RedisPrefix.USER.name(), quizMessage.getPinNum()));
         Set<ZSetOperations.TypedTuple<String>> ranking = redisUtil.getZData(resultKey, 0, userCount);
 
@@ -85,7 +84,6 @@ public class HostPlayService {
         while (iterRank.hasNext()) {
             ZSetOperations.TypedTuple<String> rankData = iterRank.next();
             RankingList.add(new UserRank(rank, rankData.getValue(), rankData.getScore()));
-            System.out.println("rank : " + rank + ", NickName : " + rankData.getValue() + ", Score : " + rankData.getScore());
             rank++;
         }
         quizMessage.setRank(RankingList);
@@ -132,19 +130,17 @@ public class HostPlayService {
                     JsonObject jsonObject = JsonParser.parseString(show).getAsJsonObject();
                     Show showData = gson.fromJson(jsonObject.get("Item"), Show.class);
 
-                    if (show != null) {
+                    if (showData != null) {
                         redisUtil.setHashData(quizKey, "currentQuiz", "1");
                         redisUtil.setHashData(quizKey, "lastQuiz", Integer.toString(showData.getQuizData().size()));
                         for (int i = 0; i < showData.getQuizData().size(); i++) {
-                            System.out.println(submitKey);
-                            System.out.println(RedisPrefix.P.name() + (i + 1));
                             String base64QuizData = Base64.getEncoder().encodeToString(gson.toJson(showData.getQuizData().get(i)).getBytes());
                             redisUtil.setHashData(quizKey, RedisPrefix.P.name() + (i + 1), base64QuizData);
                             redisUtil.setZData(submitKey, RedisPrefix.P.name() + (i + 1), 0);
                         }
-                    }
 
-                    saveStartLogData(pin, showData);
+                        saveStartLogData(pin, showData);
+                    }
 
                     // PLAY:pinNum  - 유저 리스트에 MongoDB의 ID가 들어감
                     redisUtil.SADD(playKey, quizId);
@@ -170,6 +166,7 @@ public class HostPlayService {
         String logKey = redisUtil.genKey(RedisPrefix.LOG.name(), pin);
 
         redisUtil.leftPush(logKey, "showid:" + data.getId());
+        redisUtil.leftPush(logKey, "showowner:" + data.getQuizInfo().getEmail());
         redisUtil.leftPush(logKey, "showtitle:" + data.getQuizInfo().getTitle());
         redisUtil.leftPush(logKey, "quizcount:" + data.getQuizData().size());
         redisUtil.leftPush(logKey, "quizdate:" + nowTime());
@@ -186,13 +183,11 @@ public class HostPlayService {
         Set<String> correctCountList = redisUtil.getAllZData(userKey);
         for (UserRank user : data) {
             String userdata = "nickname:" + user.getNickName() + ",rank:" + user.getRank() + ",rankscore:" + user.getRankScore();
-
             userdata += ",iscorrectlist:" + iscorrectlist.get(user.getNickName());
 
             Iterator iter = correctCountList.iterator();
             while (iter.hasNext()) {
                 String nickname = (String) iter.next();
-                System.out.println(nickname);
                 if (user.getNickName().equals(nickname)) {
                     userdata += ",correctcount:" + redisUtil.getScore(userKey, nickname);
                 }
@@ -212,7 +207,7 @@ public class HostPlayService {
         int connTimeout = 5000;
         int readTimeout = 3000;
 
-        String apiUrl = "https://ted9c640x5.execute-api.ap-northeast-3.amazonaws.com/v1/show/" + id;    // 각자 상황에 맞는 IP & url 사용
+        String apiUrl = "https://h0tp3laqa6.execute-api.ap-northeast-3.amazonaws.com/v1/show/" + id;    // 각자 상황에 맞는 IP & url 사용
 
         try {
             url = new URL(apiUrl);
@@ -248,7 +243,6 @@ public class HostPlayService {
                 ex.printStackTrace();
             }
         }
-
 
         System.out.println("결과 : " + buffer.toString());
         return buffer.toString();

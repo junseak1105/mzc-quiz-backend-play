@@ -4,7 +4,6 @@ package com.mzc.quiz.play.entity.mongo;
 
 import lombok.*;
 
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -20,8 +19,8 @@ public class QuizInfo {
     private List<String> tags;
     private String titleImg_origin;
     private String titleImg_thumb;
-    private Date createDate;
-    private Date lastModifyDate;
+    private String createDate;
+    private String lastModifyDate;
     private boolean isPulic;
     private String state;
 }

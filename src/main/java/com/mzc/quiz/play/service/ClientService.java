@@ -51,12 +51,11 @@ public class ClientService {
         QuizMessage resMessage = new QuizMessage();
         System.out.println(quizMessage);
         System.out.println(redisUtil.getScore(playKey, quizMessage.getNickName()));
-        if (/*redisUtil.SISMEMBER(playKey, username)*/ redisUtil.getScore(playKey, quizMessage.getNickName()) != null) {
+        if (redisUtil.getScore(playKey, quizMessage.getNickName()) != null) {
             simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), "nicknametry");
             System.out.println("닉네임 중복");
         } else {
-//            redisUtil.SADD(playKey, username);
-            // 유저 닉네임, 맞은 문제수 Sorted Set으로 저장
+
             redisUtil.setZData(playKey, quizMessage.getNickName(), 0);
             // set -> Sorted Set 변경에 따른 오류 발생
 //            List<String> userList = redisUtil.getUserList(quizMessage.getPinNum());
@@ -68,9 +67,6 @@ public class ClientService {
 
             // 보낸 유저한테만 다시 보내주고
             simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), quizMessage);
-
-            // LOG:핀번호 - 유저수
-
 
             // 닉네임 설정때 정답여부 초기값 설정
             String initCorrectList = "";
@@ -125,13 +121,21 @@ public class ClientService {
         double Score = ((TotalTime * 1000 - AnswerTime) / (TotalTime * 1000)) * 1000 * Rate * isCorrect;
 
         // 문제별 정답/오답 저장
-        // 근데 제출한 후에 건너뛰기를 했을 경우, SKIP에서 모든 유저 해당문제 -1로 처리
         String quizCorrectData = redisUtil.GetHashData(quizCollectKey, quizMessage.getNickName()).toString();
+        int currentQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "currentQuiz").toString());
         String[] quizCorrect = quizCorrectData.split(",");
+        quizCorrect[currentQuiz-1] = Integer.toString(isCorrect);
 
-        System.out.println(quizMessage.getQuiz().getNum());
+        String saveData="";
+        for(int i = 0; i<quizCorrect.length;i++){
+            if(i!=0){
+                saveData += "," + quizCorrect[i];
+            }else{
+                saveData += quizCorrect[i];
+            }
+        }
 
-        //redisUtil.setHashData(quizCollectKey, quizMessage.getNickName(), quizCorrectData.substring(0, quizCorrectData.length() - 1) + "-1");
+        redisUtil.setHashData(quizCollectKey, quizMessage.getNickName(), saveData);
 
         // 맞은 문제 수 카운트, 정답여부 세팅
         if (isCorrect == 1) {
