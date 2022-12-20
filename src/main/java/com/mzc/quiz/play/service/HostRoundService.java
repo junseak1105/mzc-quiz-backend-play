@@ -90,9 +90,35 @@ public class HostRoundService {
 
     public void roundSkip(QuizMessage quizMessage) {
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
+        String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), quizMessage.getPinNum());
+        String userKey = redisUtil.genKey(RedisPrefix.USER.name(), quizMessage.getPinNum());
 
         int currentQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "currentQuiz").toString());
         int lastQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "lastQuiz").toString());
+
+        // 건너뛰기때 정답여부 변경
+
+        Set<String> correctCountList = redisUtil.getAllZData(userKey);
+
+        Iterator iter = correctCountList.iterator();
+        while (iter.hasNext()) {
+            String nickname = (String) iter.next();
+            String quizCorrectData = redisUtil.GetHashData(quizCollectKey, nickname).toString();
+            String[] quizCorrect = quizCorrectData.split("/");
+
+            quizCorrect[currentQuiz-1]="-1";
+
+            String saveData = "";
+            for(int i = 0; i<quizCorrect.length;i++){
+                if(i!=0){
+                    saveData += "/" + quizCorrect[i];
+                }else{
+                    saveData += quizCorrect[i];
+                }
+            }
+
+            redisUtil.setHashData(quizCollectKey, nickname, saveData);
+        }
 
         if (currentQuiz < lastQuiz) {
             redisUtil.setHashData(quizKey, "currentQuiz", Integer.toString(currentQuiz + 1));

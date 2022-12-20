@@ -208,6 +208,10 @@ public class RedisUtil {
         return listOperations.leftPush(key, value);
     }
 
+    public List<String> getAllListData(String key){
+        return listOperations.range(key, 0, -1);
+    }
+
     public void listDataSet(String key, long index, String value){
         listOperations.set(key,index,value);
     }

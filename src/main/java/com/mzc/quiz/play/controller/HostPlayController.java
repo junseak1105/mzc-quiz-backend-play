@@ -29,10 +29,10 @@ public class HostPlayController {
         return hostPlayService.playGetUserList(quizMessage.getPinNum());
     }
 
-//    @GetMapping("/v1/host/test/{id}")
-//    public String test(@PathVariable String id) throws Exception {
-//        return hostPlayService.apiTestGet(id);
-//    }
+    @GetMapping("/v1/host/test")
+    public String test(String id) throws Exception {
+        return hostPlayService.saveLogData(id);
+    }
 
     // ============== Stomp(Websocket) =================
     @MessageMapping("/ban")

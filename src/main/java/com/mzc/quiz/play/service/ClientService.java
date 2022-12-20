@@ -51,14 +51,13 @@ public class ClientService {
         QuizMessage resMessage = new QuizMessage();
         System.out.println(quizMessage);
         System.out.println(redisUtil.getScore(playKey, quizMessage.getNickName()));
+
         if (redisUtil.getScore(playKey, quizMessage.getNickName()) != null) {
+            // 변경 예정
             simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), "nicknametry");
             System.out.println("닉네임 중복");
         } else {
-
             redisUtil.setZData(playKey, quizMessage.getNickName(), 0);
-            // set -> Sorted Set 변경에 따른 오류 발생
-//            List<String> userList = redisUtil.getUserList(quizMessage.getPinNum());
             Set<String> userList = redisUtil.getAllZData(playKey);
 
             quizMessage.setAction(QuizActionType.COMMAND);
@@ -75,7 +74,7 @@ public class ClientService {
                 if (i == 0) {
                     initCorrectList += "-1";
                 } else {
-                    initCorrectList += ",-1";
+                    initCorrectList += "/-1";
                 }
             }
             redisUtil.setHashData(quizCollectKey, quizMessage.getNickName(), initCorrectList);
@@ -123,13 +122,14 @@ public class ClientService {
         // 문제별 정답/오답 저장
         String quizCorrectData = redisUtil.GetHashData(quizCollectKey, quizMessage.getNickName()).toString();
         int currentQuiz = Integer.parseInt(redisUtil.GetHashData(quizKey, "currentQuiz").toString());
-        String[] quizCorrect = quizCorrectData.split(",");
+        String[] quizCorrect = quizCorrectData.split("/");
         quizCorrect[currentQuiz-1] = Integer.toString(isCorrect);
+        System.out.println(quizCorrect[currentQuiz-1]);
 
         String saveData="";
         for(int i = 0; i<quizCorrect.length;i++){
             if(i!=0){
-                saveData += "," + quizCorrect[i];
+                saveData += "/" + quizCorrect[i];
             }else{
                 saveData += quizCorrect[i];
             }

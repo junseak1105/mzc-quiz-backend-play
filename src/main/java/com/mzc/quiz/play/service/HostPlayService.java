@@ -57,6 +57,7 @@ public class HostPlayService {
         return redisUtil.getUserList(pinNum);
     }
 
+    // 변경예정
     public void playUserBan(QuizMessage quizMessage) {
         String pin = quizMessage.getPinNum();
         String key = redisUtil.genKey(RedisPrefix.USER.name(), pin);
@@ -102,6 +103,29 @@ public class HostPlayService {
         String pin = quizMessage.getPinNum();
         String playKey = redisUtil.genKey(pin);
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), pin);
+        String logKey = redisUtil.genKey(RedisPrefix.LOG.name(), pin);
+
+        try {
+            List<String> log = redisUtil.getAllListData(logKey);
+
+            String userData = "";
+            String logData = "{";
+            for (int i = 0; i < log.size();i++){
+                if(log.get(i).startsWith("\"nickname\"")){
+                    userData += "{" + log.get(i) + "},";
+                }else{
+                    logData += log.get(i)+",";
+                }
+            }
+            logData += "\"userdata\": [" + userData.substring(0, userData.length()-1)+ "]}";
+
+            System.out.println(logData);
+
+            saveLogData(logData);
+        } catch (Exception e) {
+            System.out.println(e);
+            throw new RuntimeException(e);
+        }
 
         redisUtil.DEL(playKey);
         redisUtil.DEL(quizKey);
@@ -165,11 +189,11 @@ public class HostPlayService {
     public void saveStartLogData(String pin, Show data) {
         String logKey = redisUtil.genKey(RedisPrefix.LOG.name(), pin);
 
-        redisUtil.leftPush(logKey, "showid:" + data.getId());
-        redisUtil.leftPush(logKey, "showowner:" + data.getQuizInfo().getEmail());
-        redisUtil.leftPush(logKey, "showtitle:" + data.getQuizInfo().getTitle());
-        redisUtil.leftPush(logKey, "quizcount:" + data.getQuizData().size());
-        redisUtil.leftPush(logKey, "quizdate:" + nowTime());
+        redisUtil.leftPush(logKey, "\"showid\":\"" + data.getId() + "\"");
+        redisUtil.leftPush(logKey, "\"email\":\"" + data.getQuizInfo().getEmail()+"\"");
+        redisUtil.leftPush(logKey, "\"showtitle\":\"" + data.getQuizInfo().getTitle()+"\"");
+        redisUtil.leftPush(logKey, "\"quizcount\":\"" + data.getQuizData().size()+"\"");
+        redisUtil.leftPush(logKey, "\"playdate\":\"" + nowTime()+"\"");
     }
 
     public void saveFinalLogData(String pin, List<UserRank> data) {
@@ -177,19 +201,19 @@ public class HostPlayService {
         String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), pin);
         String userKey = redisUtil.genKey(RedisPrefix.USER.name(), pin);
 
-        redisUtil.leftPush(logKey, "usercount:"+data.size());
+        redisUtil.leftPush(logKey, "\"usercount\":\""+data.size() + "\"");
 
         Map<Object, Object> iscorrectlist = redisUtil.GetAllHashData(quizCollectKey);
         Set<String> correctCountList = redisUtil.getAllZData(userKey);
         for (UserRank user : data) {
-            String userdata = "nickname:" + user.getNickName() + ",rank:" + user.getRank() + ",rankscore:" + user.getRankScore();
-            userdata += ",iscorrectlist:" + iscorrectlist.get(user.getNickName());
+            String userdata = "\"nickname\":\"" + user.getNickName() + "\",\"rank\":\"" + user.getRank() + "\",\"rankscore\":\"" + user.getRankScore()+"\"";
+            userdata += ",\"iscorrectlist\":\"" + iscorrectlist.get(user.getNickName())+"\"";
 
             Iterator iter = correctCountList.iterator();
             while (iter.hasNext()) {
                 String nickname = (String) iter.next();
                 if (user.getNickName().equals(nickname)) {
-                    userdata += ",correctcount:" + redisUtil.getScore(userKey, nickname);
+                    userdata += ",\"correctcount\":\"" + redisUtil.getScore(userKey, nickname)+"\"";
                 }
             }
             redisUtil.leftPush(logKey, userdata);
@@ -245,6 +269,57 @@ public class HostPlayService {
         }
 
         System.out.println("결과 : " + buffer.toString());
+        return buffer.toString();
+    }
+
+    public String saveLogData(String logData) throws Exception {
+        URL url = null;
+        String readLine = null;
+        StringBuilder buffer = null;
+        BufferedReader bufferedReader = null;
+        BufferedWriter bufferedWriter = null;
+        HttpURLConnection urlConnection = null;
+
+        int connTimeout = 5000;
+        int readTimeout = 3000;
+
+        String apiUrl = "https://h0tp3laqa6.execute-api.ap-northeast-3.amazonaws.com/v1/log";    // 각자 상황에 맞는 IP & url 사용
+
+        try {
+            url = new URL(apiUrl);
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setConnectTimeout(connTimeout);
+            urlConnection.setReadTimeout(readTimeout);
+            urlConnection.setRequestProperty("Accept", "application/json;");
+            urlConnection.setDoOutput(true);
+            urlConnection.getOutputStream().write(logData.getBytes());
+
+            buffer = new StringBuilder();
+            if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                buffer.append("LOG 데이터 저장 성공");
+            } else {
+                buffer.append("code : ");
+                buffer.append(urlConnection.getResponseCode()).append("\n");
+                buffer.append("message : ");
+                buffer.append(urlConnection.getResponseMessage()).append("\n");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (bufferedWriter != null) {
+                    bufferedWriter.close();
+                }
+                if (bufferedReader != null) {
+                    bufferedReader.close();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        System.out.println(buffer.toString());
         return buffer.toString();
     }
 }
