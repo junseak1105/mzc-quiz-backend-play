@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.Base64;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -46,15 +45,14 @@ public class ClientService {
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
         String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), quizMessage.getPinNum()); // 임시
 
-        String username = quizMessage.getNickName();
-        // Set 조회해서 -> content에 넣어서 보내기
         QuizMessage resMessage = new QuizMessage();
         System.out.println(quizMessage);
         System.out.println(redisUtil.getScore(playKey, quizMessage.getNickName()));
 
         if (redisUtil.getScore(playKey, quizMessage.getNickName()) != null) {
             // 변경 예정
-            simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), "nicknametry");
+            resMessage.setAction(QuizActionType.NICKNAMETRY);
+            simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), resMessage);
             System.out.println("닉네임 중복");
         } else {
             redisUtil.setZData(playKey, quizMessage.getNickName(), 0);
