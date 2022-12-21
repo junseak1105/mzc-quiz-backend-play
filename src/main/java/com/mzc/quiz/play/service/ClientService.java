@@ -51,7 +51,8 @@ public class ClientService {
 
         if (redisUtil.getScore(playKey, quizMessage.getNickName()) != null) {
             // 변경 예정
-            resMessage.setAction(QuizActionType.NICKNAMETRY);
+            resMessage.setNickName(quizMessage.getNickName());
+            resMessage.setAction(QuizActionType.NICKNAMERETRY);
             simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), resMessage);
             System.out.println("닉네임 중복");
         } else {

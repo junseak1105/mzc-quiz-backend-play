@@ -6,6 +6,6 @@ public enum QuizActionType {
     ROBBY,
     BAN,
     END,
-    NICKNAMETRY
+    NICKNAMERETRY
 
 }
