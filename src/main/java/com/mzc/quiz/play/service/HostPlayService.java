@@ -65,13 +65,19 @@ public class HostPlayService {
         String key = redisUtil.genKey(RedisPrefix.USER.name(), pin);
         String nickname = quizMessage.getNickName();
 
-        if (redisUtil.SREM(key, nickname) == 1) {
-            // Sorted Set으로 변경해서 오류날거임..
-            List<String> userList = redisUtil.getUserList(quizMessage.getPinNum());
-            System.out.println(redisUtil.getUserList(pin));
-        }
+        QuizMessage resMessage = new QuizMessage();
+        if (redisUtil.getScore(key, nickname) != null) {
+            redisUtil.removeZData(key, nickname);
+            Set<String> userData = redisUtil.getAllZData(key);
+            resMessage.setUserList(userData);
+            resMessage.setAction(QuizActionType.BAN);
+            resMessage.setCommand(QuizCommandType.KICK);
+            resMessage.setNickName(nickname);
+            resMessage.setPinNum(pin);
 
-        amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey, quizMessage);
+            amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey, resMessage);
+        }else{
+        }
     }
 
     public void playFinal(QuizMessage quizMessage) {
