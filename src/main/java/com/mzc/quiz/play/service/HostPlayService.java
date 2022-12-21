@@ -14,11 +14,11 @@ import com.mzc.quiz.play.entity.websocket.QuizActionType;
 import com.mzc.quiz.play.entity.websocket.QuizCommandType;
 import com.mzc.quiz.play.entity.websocket.QuizMessage;
 import com.mzc.quiz.play.entity.websocket.UserRank;
-import com.mzc.quiz.play.repository.QplayMongoRepository;
 import com.mzc.quiz.rabbitMQ.config.RabbitConfig;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,10 +39,12 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class HostPlayService {
     private final RedisUtil redisUtil;
-    private final QplayMongoRepository qplayRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final AmqpTemplate amqpTemplate;
 
+
+    @Value("${lambda.url}")
+    private String lambdaBaseUrl;
 
     public ResponseEntity playCreate(String quizId) {
         try {
@@ -170,6 +172,7 @@ public class HostPlayService {
                     redisUtil.SADD(playKey, quizId);
                     redisUtil.expire(playKey, 12, TimeUnit.HOURS);  // 하루만 유지??
                 } catch (Exception e) {
+                    System.out.println(e);
                     throw new RuntimeException(e);
                 }
 
@@ -231,7 +234,7 @@ public class HostPlayService {
         int connTimeout = 5000;
         int readTimeout = 3000;
 
-        String apiUrl = "https://h0tp3laqa6.execute-api.ap-northeast-3.amazonaws.com/v1/show/" + id;    // 각자 상황에 맞는 IP & url 사용
+        String apiUrl = lambdaBaseUrl+"/v1/show/" + id;    // 각자 상황에 맞는 IP & url 사용
 
         try {
             url = new URL(apiUrl);
@@ -283,7 +286,7 @@ public class HostPlayService {
         int connTimeout = 5000;
         int readTimeout = 3000;
 
-        String apiUrl = "https://h0tp3laqa6.execute-api.ap-northeast-3.amazonaws.com/v1/log";    // 각자 상황에 맞는 IP & url 사용
+        String apiUrl = lambdaBaseUrl+"/v1/log";    // 각자 상황에 맞는 IP & url 사용
 
         try {
             url = new URL(apiUrl);
@@ -297,7 +300,11 @@ public class HostPlayService {
 
             buffer = new StringBuilder();
             if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                buffer.append("LOG 데이터 저장 성공");
+                buffer.append("LOG 데이터 저장 성공").append("\n");
+                bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream(), "UTF-8"));
+                while ((readLine = bufferedReader.readLine()) != null) {
+                    buffer.append(readLine).append("\n");
+                }
             } else {
                 buffer.append("code : ");
                 buffer.append(urlConnection.getResponseCode()).append("\n");
