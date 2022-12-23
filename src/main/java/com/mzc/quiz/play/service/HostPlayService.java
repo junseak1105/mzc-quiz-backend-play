@@ -59,7 +59,6 @@ public class HostPlayService {
         return redisUtil.getUserList(pinNum);
     }
 
-    // 변경예정
     public void playUserBan(QuizMessage quizMessage) {
         String pin = quizMessage.getPinNum();
         String key = redisUtil.genKey(RedisPrefix.USER.name(), pin);
@@ -67,14 +66,22 @@ public class HostPlayService {
 
         QuizMessage resMessage = new QuizMessage();
         if (redisUtil.getScore(key, nickname) != null) {
-            redisUtil.removeZData(key, nickname);
-            Set<String> userData = redisUtil.getAllZData(key);
-            resMessage.setUserList(userData);
-            resMessage.setAction(QuizActionType.BAN);
-            resMessage.setCommand(QuizCommandType.KICK);
-            resMessage.setNickName(nickname);
-            resMessage.setPinNum(pin);
-
+            if(quizMessage.getAction() == QuizActionType.DOMAIN){
+                redisUtil.removeZData(key, nickname);
+                Set<String> userData = redisUtil.getAllZData(key);
+                resMessage.setUserList(userData);
+                resMessage.setAction(QuizActionType.ROBBY);
+                resMessage.setCommand(QuizCommandType.BROADCAST);
+                resMessage.setPinNum(pin);
+            }else{
+                redisUtil.removeZData(key, nickname);
+                Set<String> userData = redisUtil.getAllZData(key);
+                resMessage.setUserList(userData);
+                resMessage.setAction(QuizActionType.BAN);
+                resMessage.setCommand(QuizCommandType.KICK);
+                resMessage.setNickName(nickname);
+                resMessage.setPinNum(pin);
+            }
             amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey, resMessage);
         }else{
         }
@@ -111,6 +118,10 @@ public class HostPlayService {
         String pin = quizMessage.getPinNum();
         String playKey = redisUtil.genKey(pin);
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), pin);
+        String userKey = redisUtil.genKey(RedisPrefix.USER.name(), pin);
+        String resultKey = redisUtil.genKey(RedisPrefix.RESULT.name(), pin);
+        String submitKey = redisUtil.genKey(RedisPrefix.SUBMIT.name(), pin);
+        String anscorlistKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), pin);
         String logKey = redisUtil.genKey(RedisPrefix.LOG.name(), pin);
 
         try {
@@ -125,18 +136,23 @@ public class HostPlayService {
                     logData += log.get(i)+",";
                 }
             }
-            logData += "\"userdata\": [" + userData.substring(0, userData.length()-1)+ "]}";
+            if(userData.equals("") == false){
+                logData += "\"userdata\": [" + userData.substring(0, userData.length()-1)+ "]}";
 
-            System.out.println(logData);
-
-            saveLogData(logData);
+                saveLogData(logData);
+            }
         } catch (Exception e) {
             System.out.println(e);
             throw new RuntimeException(e);
         }
 
-        redisUtil.DEL(playKey);
-        redisUtil.DEL(quizKey);
+        redisUtil.expire(playKey, 1, TimeUnit.HOURS);
+        redisUtil.expire(quizKey, 1, TimeUnit.HOURS);
+        redisUtil.expire(userKey, 1, TimeUnit.HOURS);
+        redisUtil.expire(resultKey, 1, TimeUnit.HOURS);
+        redisUtil.expire(submitKey, 1, TimeUnit.HOURS);
+        redisUtil.expire(anscorlistKey, 1, TimeUnit.HOURS);
+        redisUtil.expire(logKey, 1, TimeUnit.HOURS);
 
         amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey, quizMessage);
     }

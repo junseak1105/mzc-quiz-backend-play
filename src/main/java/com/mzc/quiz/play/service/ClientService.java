@@ -43,14 +43,14 @@ public class ClientService {
     public void setNickname(Principal principal, QuizMessage quizMessage) {
         String playKey = redisUtil.genKey(RedisPrefix.USER.name(), quizMessage.getPinNum());
         String quizKey = redisUtil.genKey(RedisPrefix.QUIZ.name(), quizMessage.getPinNum());
-        String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), quizMessage.getPinNum()); // 임시
+        String quizCollectKey = redisUtil.genKey(RedisPrefix.ANSCORLIST.name(), quizMessage.getPinNum());
+        String resultKey = redisUtil.genKey(RedisPrefix.RESULT.name(), quizMessage.getPinNum());
 
         QuizMessage resMessage = new QuizMessage();
         System.out.println(quizMessage);
         System.out.println(redisUtil.getScore(playKey, quizMessage.getNickName()));
 
         if (redisUtil.getScore(playKey, quizMessage.getNickName()) != null) {
-            // 변경 예정
             resMessage.setNickName(quizMessage.getNickName());
             resMessage.setAction(QuizActionType.NICKNAMERETRY);
             simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), resMessage);
@@ -78,6 +78,7 @@ public class ClientService {
             }
             redisUtil.setHashData(quizCollectKey, quizMessage.getNickName(), initCorrectList);
 
+            redisUtil.setZData(resultKey, quizMessage.getNickName(), 0);
 
             quizMessage.setAction(QuizActionType.ROBBY);
             quizMessage.setCommand(QuizCommandType.BROADCAST);
