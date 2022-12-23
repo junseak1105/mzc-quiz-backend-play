@@ -14,6 +14,8 @@ import com.mzc.quiz.global.redisUtil.RedisPrefix;
 import com.mzc.quiz.global.redisUtil.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -31,12 +33,12 @@ public class ClientService {
 
     private final AmqpTemplate amqpTemplate;
 
-    public DefaultRes joinRoom(QuizMessage quizMessage) {
+    public ResponseEntity joinRoom(QuizMessage quizMessage) {
         String pin = redisUtil.genKey(quizMessage.getPinNum());
         if (redisUtil.hasKey(pin)) {
-            return DefaultRes.res(StatusCode.OK, ResponseMessages.SUCCESS, quizMessage);
+            return new ResponseEntity(DefaultRes.res(StatusCode.OK, ResponseMessages.SUCCESS, quizMessage), HttpStatus.OK);
         } else {
-            return DefaultRes.res(StatusCode.NOT_FOUND, ResponseMessages.BAD_REQUEST);
+            return new ResponseEntity(DefaultRes.res(StatusCode.NOT_FOUND, ResponseMessages.BAD_REQUEST), HttpStatus.BAD_REQUEST);
         }
     }
 
