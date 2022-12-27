@@ -161,5 +161,7 @@ public class ClientService {
 
         // 제출한 사람에게 정답 여부 전달
         simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), quizMessage);
+
+        amqpTemplate.convertAndSend(RabbitConfig.quizExchange, RabbitConfig.quizRoutingKey, quizMessage);
     }
 }
