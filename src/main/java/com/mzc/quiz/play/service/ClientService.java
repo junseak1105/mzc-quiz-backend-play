@@ -159,6 +159,8 @@ public class ClientService {
         // 제출자 수 카운트
         redisUtil.plusScore(submitKey, RedisPrefix.P.name() + quizMessage.getSubmit().getQuizNum(), 1.0);
 
+        quizMessage.setSubmitCnt(redisUtil.getScore(submitKey, RedisPrefix.P.name() + quizMessage.getSubmit().getQuizNum()).toString().substring(0,1));
+
         // 제출한 사람에게 정답 여부 전달
         simpMessagingTemplate.convertAndSendToUser(principal.getName(), StompWebSocketConfig.DIRECT + quizMessage.getPinNum(), quizMessage);
 
