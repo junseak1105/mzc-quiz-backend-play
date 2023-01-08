@@ -1,16 +1,16 @@
 # 🕹 클라우드, 서버리스 기반 실시간 웹 퀴즈 게임 *엠퀴즈*
 
 ## 목차
-1. [소개](#1소개)
-2. [📋 설계 문서](#-설계-문서)
-3. [기술 스택](#3기술-스택)
-4. [핵심 적용 기술](#4핵심-적용-기술)
-5. [인프라 구조](#5인프라-구조)
-6. [완료 보고서](#6완료-보고서)
-7. [발표 자료](7발표-자료)
-8. [팀원 정보](#8팀원-정보)
+1. [소개](#1-소개)
+2. [설계 문서](#2-설계-문서)
+3. [기술 스택](#3-기술-스택)
+4. [핵심 적용 기술](#4-핵심-적용-기술)
+5. [인프라 구조](#5-인프라-구조)
+6. [완료 보고서](#6-완료-보고서)
+7. [발표 자료](#7-발표-자료)
+8. [팀원 정보](#8-팀원-정보)
 
-## 1.소개
+## 1. 소개
 
 #### 메가존 클라우드 네이티브 애플리케이션 교육 최종 프로젝트
 ```text
@@ -39,15 +39,14 @@ Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos
   - ##### 3. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 
 
-## 📋 설계 문서 
-
+## 2. 설계 문서
 
 - ##### ✏️문서
 
 - ##### 🖼완료보고서
 
 
-## 3.기술 스택
+## 3. 기술 스택
 
 ### IDE & VCS
 <img src="https://img.shields.io/badge/IntelliJ IDEA-000000?style=for-the-badge&logo=IntelliJ IDEA&logoColor=white"> 
@@ -88,7 +87,7 @@ Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos
 
 
 
-## 4.핵심 적용 기술 
+## 4. 핵심 적용 기술 
 
 ### 기능1
 > 기능1 설명
@@ -99,13 +98,13 @@ Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos
 
 
 
-## 5.인프라 구조 
+## 5. 인프라 구조 
 
-## 6.완료 보고서
+## 6. 완료 보고서
 
-## 7.발표 자료
+## 7. 발표 자료
 
-## 8.팀원 정보 
+## 8. 팀원 정보 
 
 ##### 고태훈 ( Tae Hoon Go )
 
